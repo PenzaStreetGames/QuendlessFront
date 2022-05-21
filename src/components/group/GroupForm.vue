@@ -38,7 +38,7 @@ export default {
       if (this.errors.length > 0)
         return;
       this.createGroup();
-      this.$emit('createGroup')
+
     },
 
     createGroup() {
@@ -49,10 +49,18 @@ export default {
               'Accept': 'application/json',
               'Content-Type': 'application/json'
             },
+            credentials: "include",
             body: JSON.stringify(this.group)
           })
-          .then((response) => response.text())
-          .then((data) => console.log(data));
+          .then(async (response) => {
+            if (response.ok) {
+              console.log(await response.text());
+              this.$emit('createGroup');
+              return;
+            }
+            this.errors = [];
+            this.errors.push(await response.text());
+          });
     }
   }
 }

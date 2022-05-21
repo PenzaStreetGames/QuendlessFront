@@ -42,7 +42,7 @@ import GroupForm from "./components/group/GroupForm.vue";
             <button class="btn btn-outline-primary" @click="groupPanel.adding=true">+</button>
           </div>
 
-          <GroupList :groups="groupPanel.groups" @setGroups="function (groups) {this.groupPanel.groups = groups }"/>
+          <GroupList :groups="groupPanel.groups" @setGroups="function (groups) { groupPanel.groups = groups }"/>
           <GroupForm v-if="groupPanel.adding"
                      @cancelCreation="groupPanel.adding=false" @createGroup="groupPanel.adding=false"/>
         </div>
@@ -124,6 +124,7 @@ export default {
               'Accept': 'application/json',
               'Content-Type': 'application/json'
             },
+            credentials: "include",
             body: JSON.stringify(this.user)
           })
           .then((response) => response.text())

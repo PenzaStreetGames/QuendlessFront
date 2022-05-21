@@ -1,16 +1,22 @@
 <template>
   <div>
-    <p> {{ name }}</p>
+    <p> {{ group.name }}</p>
   </div>
 </template>
 
 <script>
 export default {
   name: "GroupCard",
-  props: ["name"],
+  props: {
+    "group": {
+      "name": {
+        "type": String,
+        "default": ""
+      }
+    }
+  },
   data() {
     return {
-      "name": "group"
     }
   }
 }

@@ -1,7 +1,7 @@
 <template>
   <div class="col border-primary bg-white">
     <p v-if="groups.length === 0">Нет ни одной группы</p>
-    <GroupCard v-for="group in groups" :name="group.name" />
+    <GroupCard v-for="group in groups" :group="group" />
   </div>
 </template>
 
