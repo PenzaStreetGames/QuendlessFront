@@ -8,6 +8,10 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore"
   },
   "dependencies": {
+    "axios": "^0.27.2",
+    "cors": "^2.8.5",
+    "fetch": "^1.1.0",
+    "https": "^1.0.0",
     "vue": "^3.2.33"
   },
   "devDependencies": {
