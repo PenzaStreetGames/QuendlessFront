@@ -11,10 +11,10 @@
 <!--    <label for="two">Войти</label>-->
   </div>
   <div v-if="auth === 'sign_in'">
-    <AuthorisationForm :user="user" :errors="errors.authorisation" @signin="signin"/>
+    <AuthorisationForm :errors="errors.authorisation" :user="user" @signin="signin"/>
   </div>
   <div v-if="auth === 'sign_up'">
-    <RegistrationForm :user="user" :errors="errors.registration" @signup="signup"/>
+    <RegistrationForm :errors="errors.registration" :user="user" @signup="signup"/>
   </div>
 
 </div>
@@ -46,24 +46,16 @@ export default {
     }
   },
   methods: {
-    signup(event) {
-      console.log("aboba");
-      this.$emit("signup");
-      // return axios.post("http://localhost:8080/user/register",
-      //     {
-      //       "login": this.user.login,
-      //       "password": this.user.password
-      //     }
-      // )
+    signup(user) {
+      this.$emit("signup", user);
     },
 
-    signin(event) {
-      console.log("baboba");
-      this.$emit("signin")
+    signin(user) {
+      console.log(user);
+      this.$emit("signin", user)
     },
 
     changeAuthForm(form) {
-      console.log(form)
       this.$emit('changeAuthForm', form)
     }
   }

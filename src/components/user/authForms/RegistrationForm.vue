@@ -42,23 +42,25 @@ export default {
       if (this.user.login.length === 0) {
         this.selfErrors.push("Пустой логин");
       }
-      // else if (this.user.login.length < 4) {
-      //   this.selfErrors.push("Короткий логин (меньше 4)")
-      // }
+      else if (this.user.login.length < 4) {
+        this.selfErrors.push("Короткий логин (меньше 4)")
+      }
       if (this.user.password.length === 0) {
         this.selfErrors.push("Пустой пароль")
       }
-      // else if (this.user.password.length < 8) {
-      //   this.selfErrors.push("Короткий пароль (меньше 8)")
-      // }
+      else if (this.user.password.length < 8) {
+        this.selfErrors.push("Короткий пароль (меньше 8)")
+      }
       if (this.user.password !== this.user.password2) {
         this.selfErrors.push("Пароли не совпадают")
       }
       if (this.selfErrors.length > 0)
         return;
 
-      this.$emit('signup');
-      console.log("aaaa");
+      const newUser = {'login': this.user.login, 'password': this.user.password};
+      console.log(newUser);
+      this.$emit('signup', newUser);
+
     }
   }
 }

@@ -1,11 +1,10 @@
 <script setup>
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
 import AuthPanel from "./components/user/AuthPanel.vue";
 import GroupList from "./components/group/GroupList.vue";
-import UserData from "./components/UserData.vue";
 import UserProfile from "./components/user/UserProfile.vue";
-import GroupForm from "./components/group/GroupForm.vue";
+import QueueList from "./components/queue/QueueList.vue";
+import QueueMemberList from "./components/queue_members/QueueMemberList.vue";
+import DescriptionCard from "./components/description/DescriptionCard.vue";
 
 </script>
 
@@ -39,36 +38,53 @@ import GroupForm from "./components/group/GroupForm.vue";
         <div class="col-3 text-center border rounded bg-white flex-column align-items-start">
           <div class="row border rounded bg-light p-1">
             <h4>Группы</h4>
-            <button class="btn btn-outline-primary" @click="groupPanel.adding=true">+</button>
           </div>
-
-          <GroupList :groups="groupPanel.groups" @setGroups="function (groups) { groupPanel.groups = groups }"/>
-          <GroupForm v-if="groupPanel.adding"
-                     @cancelCreation="groupPanel.adding=false" @createGroup="groupPanel.adding=false"/>
+          <GroupList :groups="groupPanel.groups" :chosen-group="groupPanel.chosenGroup"
+                     :adding="groupPanel.adding" :searching="groupPanel.searching"
+                     :search-groups="groupPanel.searchGroups" :chosen-search-group="groupPanel.chosenSearchGroup"
+                     @setGroups="function (groups) { groupPanel.groups = groups }"
+                     @chooseGroup="function (group) { changeGroup(group) }"
+                     @cancelCreation="groupPanel.adding=false"
+                     @groupPanelAdding="groupPanel.adding=true"
+                     @setSearchGroups="function (groups) { groupPanel.searchGroups = groups }"
+                     @chooseSearchGroup="function (group) { changeSearchGroup(group) }"
+                     @groupPanelSearching="groupPanel.searching=true"
+                     @cancelSearching="groupPanel.searching=false"/>
         </div>
         <div class="col-3 text-center border rounded bg-white">
           <div class="row border rounded bg-light p-1">
             <h4>Очереди</h4>
           </div>
-          <div class="col border-primary bg-white">
-            <p>Вы не авторизованы</p>
-          </div>
+          <QueueList v-if="is_group_selected"
+                     :queues="queuePanel.queues" :chosen-queue="queuePanel.chosenQueue"
+                     :chosen-group="groupPanel.chosenGroup" :adding="queuePanel.adding"
+                     :is-group-selected="is_group_selected"
+                     @setQueues="function (queues) { queuePanel.queues = queues }"
+                     @chooseQueue="function (queue) { changeQueue(queue) }"
+                     @cancelCreation="queuePanel.adding=false"
+                     @queuePanelAdding="queuePanel.adding=true"/>
         </div>
         <div class="col-3 text-center border rounded bg-white">
           <div class="row border rounded bg-light p-1">
             <h4>Очередь</h4>
           </div>
-          <div class="col border-primary bg-white">
-            <p>Вы не авторизованы</p>
-          </div>
+
+          <QueueMemberList v-if="is_queue_selected"
+                           :chosen-queue="queuePanel.chosenQueue" :user="serverUser"
+                           :chosen-group="groupPanel.chosenGroup"
+                           :queue-members="queueMembersPanel.queueMembers"
+                           :in-queue="in_queue"
+                           :is-queue-selected="is_queue_selected"
+                           @setQueueMembers="function (members) { queueMembersPanel.queueMembers = members }"/>
         </div>
         <div class="col-3 text-center border rounded bg-white">
           <div class="row border rounded bg-light p-1">
             <h4>Описание</h4>
           </div>
-          <div class="col border-primary bg-white">
-            <p>Вы не авторизованы</p>
-          </div>
+          <DescriptionCard
+              :chosen-object-type="lastChosenObjectType"
+              :chosen-group="(groupPanel.searching ? groupPanel.chosenSearchGroup : groupPanel.chosenGroup)"
+              :chosen-queue="queuePanel.chosenQueue"/>
         </div>
       </div>
     </div>
@@ -87,6 +103,7 @@ export default {
         "password": ""
       },
       "serverUser": {
+        "userId": 0,
         "login": "",
         "password": "",
         "name": "",
@@ -102,21 +119,54 @@ export default {
       "section": "main",
       "groupPanel": {
         "groups": [],
+        "searchGroups": [],
         "adding": false,
-      }
+        "searching": false,
+        "chosenGroup": {
+          "name": "",
+          "groupId": 0
+        },
+        "chosenSearchGroup": {
+          "name": "",
+          "groupId": 0
+        }
+      },
+      "queuePanel": {
+        "queues": [],
+        "adding": false,
+        "chosenQueue": {
+          "name": "",
+          "queueId": 0
+        }
+      },
+      "queueMembersPanel": {
+        "queueMembers": []
+      },
+      "lastChosenObjectType": ""
     }
   },
   computed: {
     is_auth: function () {
       return this.serverUser.login;
+    },
+    is_group_selected: function () {
+      return this.groupPanel.chosenGroup.groupId !== 0;
+    },
+    is_queue_selected: function () {
+      return this.queuePanel.chosenQueue.queueId !== 0;
+    },
+    in_queue: function () {
+      console.log(this.queueMembersPanel.queueMembers);
+      const res = this.queueMembersPanel.queueMembers.find((member) => member.login === this.serverUser.login);
+      return res !== undefined;
     }
   },
   mounted() {
     this.getUserFromServer();
   },
   methods: {
-    signup(event) {
-      console.log(this.user);
+    signup(user) {
+      console.log(user);
       let response = fetch("http://localhost:8080/user/register",
           {
             method: "post",
@@ -125,16 +175,16 @@ export default {
               'Content-Type': 'application/json'
             },
             credentials: "include",
-            body: JSON.stringify(this.user)
+            body: JSON.stringify(user)
           })
           .then((response) => response.text())
           .then((data) => this.signupHandle(data));
     },
-    signin(event) {
+    signin(user) {
       console.log(this.user);
       const details = {
-        "login": this.user.login,
-        "password": this.user.password
+        "login": user.login,
+        "password": user.password
       }
       const formBody = Object.keys(details).map(key => encodeURIComponent(key) + '=' + encodeURIComponent(details[key])).join('&');
 
@@ -154,9 +204,8 @@ export default {
               return;
             }
             console.log(document.cookie)
-            return response.text()
-          })
-          .then((data) => this.signinSuccess(data));
+            return this.signinSuccess(await response.text())
+          });
     },
 
     signinSuccess(data) {
@@ -181,6 +230,7 @@ export default {
       console.log(user);
       if (user.login === 'anonymousUser')
         return;
+      this.serverUser.userId = user.userId;
       this.serverUser.login = user.login;
       this.serverUser.password = this.user.password;
       this.serverUser.name = user.name;
@@ -215,6 +265,22 @@ export default {
 
     changeSection(section) {
       this.section = section;
+    },
+
+    changeGroup(group) {
+      this.groupPanel.chosenGroup = group;
+      this.queuePanel.chosenQueue = {'queueId': 0};
+      this.lastChosenObjectType = "group";
+    },
+
+    changeSearchGroup(group) {
+      this.groupPanel.chosenSearchGroup = group;
+      this.lastChosenObjectType = "group";
+    },
+
+    changeQueue(queue) {
+      this.queuePanel.chosenQueue = queue;
+      this.lastChosenObjectType = "queue";
     },
 
     logout() {

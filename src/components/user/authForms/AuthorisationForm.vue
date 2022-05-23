@@ -33,25 +33,25 @@ export default {
     }
   },
   methods: {
-    check(user) {
+    check() {
       this.selfErrors = [];
-      if (user.login.length === 0) {
+      if (this.user.login.length === 0) {
         this.selfErrors.push("Пустой логин");
       }
-      // else if (user.login.length < 4) {
-      //   this.selfErrors.push("Короткий логин (меньше 4)")
-      // }
-      if (user.password.length === 0) {
+      else if (this.user.login.length < 4) {
+        this.selfErrors.push("Короткий логин (меньше 4)")
+      }
+      if (this.user.password.length === 0) {
         this.selfErrors.push("Пустой пароль")
       }
-      // else if (user.password.length < 8) {
-      //   this.selfErrors.push("Короткий пароль (меньше 8)")
-      // }
+      else if (this.user.password.length < 8) {
+        this.selfErrors.push("Короткий пароль (меньше 8)")
+      }
       if (this.selfErrors.length > 0)
         return;
 
-      this.$emit('signin', user);
-      console.log("bbbbb");
+      console.log(this.user);
+      this.$emit('signin', this.user);
     }
   }
 }

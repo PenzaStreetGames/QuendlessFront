@@ -1,13 +1,13 @@
 <template>
   <div class="bg-light rounded border border-secondary p-1">
     <h5>Создать группу</h5>
+    <label for="groupName">Название: </label>
+    <input class="form-control" id="groupName" type="text" v-model="group.name">
+    <label for="groupDescription">Описание: </label>
+    <textarea class="form-control align-content-stretch" id="groupDescription" v-model="group.description"
+              placeholder="Описание группы"></textarea>
     <div>
-      <p>Название: <input class="form-control" type="text" v-model="group.name"></p>
-    </div>
-    <p>Описание: </p>
-    <textarea class="form-control align-content-stretch" v-model="group.description" placeholder="Описание группы"></textarea>
-    <div>
-      <button class="btn btn-outline-primary m-1" @click="this.$emit('cancelCreation')">Отмена</button>
+      <button class="btn btn-outline-primary m-1" @click="$emit('cancelCreation')">Отмена</button>
       <button class="btn btn-outline-primary m-1" @click="checkGroup">Создать</button>
     </div>
     <div class="text-danger" v-for="error in errors">
@@ -42,7 +42,7 @@ export default {
     },
 
     createGroup() {
-      let response = fetch("http://localhost:8080/group",
+      fetch("http://localhost:8080/group",
           {
             method: "post",
             headers: {
@@ -56,6 +56,7 @@ export default {
             if (response.ok) {
               console.log(await response.text());
               this.$emit('createGroup');
+              this.$emit('cancelCreation');
               return;
             }
             this.errors = [];
